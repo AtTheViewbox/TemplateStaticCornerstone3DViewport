@@ -1,0 +1,4 @@
+.DS_Store
+static-viewport/node_modules/
+static-viewport/build/
+static-viewport/.DS_Store

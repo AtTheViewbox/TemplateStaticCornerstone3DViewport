@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/TemplateStaticCornerstone3DViewport/static/css/main.47cf5432.css",
+    "main.js": "/TemplateStaticCornerstone3DViewport/static/js/main.dbead28a.js",
+    "index.html": "/TemplateStaticCornerstone3DViewport/index.html",
+    "main.47cf5432.css.map": "/TemplateStaticCornerstone3DViewport/static/css/main.47cf5432.css.map",
+    "main.dbead28a.js.map": "/TemplateStaticCornerstone3DViewport/static/js/main.dbead28a.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.47cf5432.css",
+    "static/js/main.dbead28a.js"
+  ]
+}

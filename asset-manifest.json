@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/TemplateStaticCornerstone3DViewport/static/css/main.47cf5432.css",
-    "main.js": "/TemplateStaticCornerstone3DViewport/static/js/main.21e9f369.js",
+    "main.css": "/TemplateStaticCornerstone3DViewport/static/css/main.d030c977.css",
+    "main.js": "/TemplateStaticCornerstone3DViewport/static/js/main.fb8cdee0.js",
     "index.html": "/TemplateStaticCornerstone3DViewport/index.html",
-    "main.47cf5432.css.map": "/TemplateStaticCornerstone3DViewport/static/css/main.47cf5432.css.map",
-    "main.21e9f369.js.map": "/TemplateStaticCornerstone3DViewport/static/js/main.21e9f369.js.map"
+    "main.d030c977.css.map": "/TemplateStaticCornerstone3DViewport/static/css/main.d030c977.css.map",
+    "main.fb8cdee0.js.map": "/TemplateStaticCornerstone3DViewport/static/js/main.fb8cdee0.js.map"
   },
   "entrypoints": [
-    "static/css/main.47cf5432.css",
-    "static/js/main.21e9f369.js"
+    "static/css/main.d030c977.css",
+    "static/js/main.fb8cdee0.js"
   ]
 }

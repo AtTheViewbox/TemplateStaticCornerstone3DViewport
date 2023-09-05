@@ -1,68 +1,123 @@
-import React, { useEffect } from 'react';
+import React, { useRef, useContext, useEffect } from 'react';
+import { DataContext } from '../context/DataContext.js';
+
 import * as cornerstone from '@cornerstonejs/core';
 import * as cornerstoneTools from '@cornerstonejs/tools';
 import cornerstoneDICOMImageLoader from '@cornerstonejs/dicom-image-loader';
 import dicomParser from 'dicom-parser';
 
-export default function Viewport() {
+export default function Viewport(props) {
+  const elementRef = useRef(null);
 
-  const imageIds = [
-    "dicomweb:https://ohif-dicom-json-example.s3.amazonaws.com/LIDC-IDRI-0001/01-01-2000-30178/3000566.000000-03192/1-002.dcm"
-  ];
+  const { viewport_data } = useContext(DataContext).data;
+  const { viewport_idx, rendering_engine } = props;
+  const real_viewport_data = viewport_data[viewport_idx];
 
   useEffect(() => {
 
-    const setupCornerstone = async () => {
-      window.cornerstone = cornerstone;
-      window.cornerstoneTools = cornerstoneTools;
-      cornerstoneDICOMImageLoader.external.cornerstone = cornerstone;
-      cornerstoneDICOMImageLoader.external.dicomParser = dicomParser;
-      await cornerstone.init();
-      await cornerstoneTools.init();
-    };
+    const loadImagesAndDisplay = async () => {
 
-    const loadImagesAndDisplay = () => {
-      imageIds.map((imageId) => {
-        cornerstone.imageLoader.loadAndCacheImage(imageId);
-      });
-  
-      const renderingEngineId = 'myRenderingEngine';
-      const renderingEngine = new cornerstone.RenderingEngine(renderingEngineId);
-  
-      const element = document.getElementById('viewport-container');
-  
-      const viewportId = 'CT_STACK';
+      const viewportId = `${viewport_idx}-vp`;
       const viewportInput = {
         viewportId,
         type: cornerstone.Enums.ViewportType.STACK,
-        element,
+        element: elementRef.current,
         defaultOptions: {
-          background: [0.1, 0.1, 0.1],
+
         },
       };
-    
-      renderingEngine.enableElement(viewportInput);
-  
+
+      rendering_engine.enableElement(viewportInput);
+
       const viewport = (
-        renderingEngine.getViewport(viewportId)
+        rendering_engine.getViewport(viewportId)
       );
-    
-      // Define a stack containing a single image
+
+      const { imageIds, ww, wc } = real_viewport_data;
+
+      imageIds.map((imageId) => {
+        cornerstone.imageLoader.loadAndCacheImage(imageId);
+      });
+
       const stack = imageIds;
-    
-      // Set the stack on the viewport
-      viewport.setStack(stack);
-    
-      // Render the image
+      await viewport.setStack(stack);
+
+      viewport.setProperties({
+        voiRange: cornerstone.utilities.windowLevel.toLowHighRange(ww, wc),
+        isComputedVOI: false,
+      });
+
       viewport.render();
     };
 
-    setupCornerstone().then(() => {
-      loadImagesAndDisplay();
-    });
+    const addCornerstoneTools = () => {
+
+      const {
+        PanTool,
+        WindowLevelTool,
+        StackScrollMouseWheelTool,
+        ZoomTool,
+        PlanarRotateTool,
+        ToolGroupManager,
+        Enums: csToolsEnums,
+      } = cornerstoneTools;
+      
+      const { MouseBindings } = csToolsEnums;
+      
+      const toolGroupId = `${viewport_idx}-tl`;
+
+      // Define a tool group, which defines how mouse events map to tool commands for
+      // Any viewport using the group
+      ToolGroupManager.createToolGroup(toolGroupId);
+      const toolGroup = ToolGroupManager.getToolGroup(toolGroupId);
+
+      // // Add tools to the tool group
+      toolGroup.addTool(WindowLevelTool.toolName);
+      toolGroup.addTool(PanTool.toolName);
+      toolGroup.addTool(ZoomTool.toolName);
+      toolGroup.addTool(StackScrollMouseWheelTool.toolName, { loop: true });
+      toolGroup.addTool(PlanarRotateTool.toolName);
+
+      // Set the initial state of the tools, here all tools are active and bound to
+      // Different mouse inputs
+      toolGroup.setToolActive(WindowLevelTool.toolName, {
+        bindings: [
+          {
+            mouseButton: MouseBindings.Primary, // Left Click
+          },
+        ],
+      });
+      toolGroup.setToolActive(PanTool.toolName, {
+        bindings: [
+          {
+            mouseButton: MouseBindings.Auxiliary, // Middle Click
+          },
+        ],
+      });
+      toolGroup.setToolActive(ZoomTool.toolName, {
+        bindings: [
+          {
+            mouseButton: MouseBindings.Secondary, // Right Click
+          },
+        ],
+      });
+
+
+      toolGroup.setToolActive(StackScrollMouseWheelTool.toolName);
+      toolGroup.addViewport(`${viewport_idx}-vp`, 'myRenderingEngine');
+
+
+    };
+
+    console.log("mounting viewport");
+    if (real_viewport_data) {
+      loadImagesAndDisplay().then(addCornerstoneTools());
+    }
+    return () => { console.log("unmounting viewport"); };
   }, []);
 
+
   return (
-    <div id="viewport-container" style={{ width: '100%', height: '100%' }} />
+    <div ref={elementRef} id={viewport_idx} style={{ width: '100%', height: '100%' }} />
   );
 }

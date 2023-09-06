@@ -1,9 +1,14 @@
 import './App.css';
-import Viewport from './viewport/viewport';
 import Layout from './layout/layout';
 import { DataProvider } from './context/DataContext';
+import { useEffect } from 'react';
 
 function App() {
+
+  useEffect(() => {
+    console.log("App loaded")
+  }, []);
+
   return (
     <div className="App">
       <DataProvider>

@@ -9,9 +9,9 @@ import dicomParser from 'dicom-parser';
 export default function Viewport(props) {
   const elementRef = useRef(null);
 
-  const { viewport_data } = useContext(DataContext).data;
+  const { vd } = useContext(DataContext).data;
   const { viewport_idx, rendering_engine } = props;
-  const real_viewport_data = viewport_data[viewport_idx];
+  const viewport_data = vd[viewport_idx];
 
   useEffect(() => {
 
@@ -33,13 +33,13 @@ export default function Viewport(props) {
         rendering_engine.getViewport(viewportId)
       );
 
-      const { imageIds, ww, wc } = real_viewport_data;
+      const { s, ww, wc } = viewport_data;
 
-      imageIds.map((imageId) => {
+      s.map((imageId) => {
         cornerstone.imageLoader.loadAndCacheImage(imageId);
       });
 
-      const stack = imageIds;
+      const stack = s;
       await viewport.setStack(stack);
 
       viewport.setProperties({
@@ -56,6 +56,7 @@ export default function Viewport(props) {
         PanTool,
         WindowLevelTool,
         StackScrollMouseWheelTool,
+        StackScrollTool,
         ZoomTool,
         PlanarRotateTool,
         ToolGroupManager,
@@ -78,39 +79,48 @@ export default function Viewport(props) {
       toolGroup.addTool(StackScrollMouseWheelTool.toolName, { loop: true });
       toolGroup.addTool(PlanarRotateTool.toolName);
 
-      // Set the initial state of the tools, here all tools are active and bound to
-      // Different mouse inputs
-      toolGroup.setToolActive(WindowLevelTool.toolName, {
-        bindings: [
-          {
-            mouseButton: MouseBindings.Primary, // Left Click
-          },
-        ],
-      });
-      toolGroup.setToolActive(PanTool.toolName, {
-        bindings: [
-          {
-            mouseButton: MouseBindings.Auxiliary, // Middle Click
-          },
-        ],
-      });
+      // // Set the initial state of the tools, here all tools are active and bound to
+      // // Different mouse inputs
+      // toolGroup.setToolActive(WindowLevelTool.toolName, {
+      //   bindings: [
+      //     {
+      //       mouseButton: MouseBindings.Primary, // Left Click
+      //     },
+      //   ],
+      // });
+      // toolGroup.setToolActive(PanTool.toolName, {
+      //   bindings: [
+      //     {
+      //       mouseButton: MouseBindings.Auxiliary, // Middle Click
+      //     },
+      //   ],
+      // });
+      // toolGroup.setToolActive(ZoomTool.toolName, {
+      //   bindings: [
+      //     {
+      //       mouseButton: MouseBindings.Secondary, // Right Click
+      //     },
+      //   ],
+      // });
+
       toolGroup.setToolActive(ZoomTool.toolName, {
-        bindings: [
-          {
-            mouseButton: MouseBindings.Secondary, // Right Click
-          },
-        ],
+        bindings: [{ numTouchPoints: 2 }],
+      });
+      toolGroup.setToolActive(StackScrollTool.toolName, {
+        bindings: [{ mouseButton: MouseBindings.Primary}],
+      });
+      toolGroup.setToolActive(WindowLevelTool.toolName, {
+        bindings: [{ numTouchPoints: 3 }],
       });
 
-
-      toolGroup.setToolActive(StackScrollMouseWheelTool.toolName);
+      //toolGroup.setToolActive(StackScrollMouseWheelTool.toolName);
       toolGroup.addViewport(`${viewport_idx}-vp`, 'myRenderingEngine');
 
 
     };
 
     console.log("mounting viewport");
-    if (real_viewport_data) {
+    if (viewport_data) {
       loadImagesAndDisplay().then(addCornerstoneTools());
     }
     return () => { console.log("unmounting viewport"); };

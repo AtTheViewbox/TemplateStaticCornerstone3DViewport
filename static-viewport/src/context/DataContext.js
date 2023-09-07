@@ -1,6 +1,8 @@
 import { createContext, useState, useEffect, useReducer } from "react";
 import { unflatten, flatten } from "flat";
 
+import { recreateList } from '../utils/inputParser.js';
+
 import * as cornerstone from '@cornerstonejs/core';
 import * as cornerstoneTools from '@cornerstonejs/tools';
 import cornerstoneDICOMImageLoader from '@cornerstonejs/dicom-image-loader';
@@ -11,6 +13,15 @@ export const DataDispatchContext = createContext({});
 
 // create initial data object from URL query string
 const urlData = unflatten(Object.fromEntries(new URLSearchParams(window.location.search)));
+urlData.vd.forEach((vdItem) => {
+    if (vdItem.s && vdItem.s.pf && vdItem.s.sf && vdItem.s.s && vdItem.s.e) {
+        vdItem.s = recreateList(vdItem.s.pf, vdItem.s.sf, vdItem.s.s, vdItem.s.e);
+    }
+});
+
+console.log(urlData);
+
+console.log("urlData", urlData)
 
 export const DataProvider = ({ children }) => {
     const [data, dispatch] = useReducer(dataReducer, urlData);
@@ -34,6 +45,7 @@ export const DataProvider = ({ children }) => {
                 PanTool,
                 WindowLevelTool,
                 StackScrollMouseWheelTool,
+                StackScrollTool,
                 ZoomTool,
                 PlanarRotateTool,
             } = cornerstoneTools;
@@ -41,6 +53,7 @@ export const DataProvider = ({ children }) => {
             cornerstoneTools.addTool(PanTool);
             cornerstoneTools.addTool(WindowLevelTool);
             cornerstoneTools.addTool(StackScrollMouseWheelTool);
+            cornerstoneTools.addTool(StackScrollTool);
             cornerstoneTools.addTool(ZoomTool);
             cornerstoneTools.addTool(PlanarRotateTool);
       
@@ -83,75 +96,3 @@ export function dataReducer(data, action) {
 
 
 
-
-////////////////// CODE TO GENERATE URL QUERY STRINGS //////////////////
-
-// const dataToCreateQueryString = {
-//     layout_data : {
-//         rows: 2,
-//         cols: 2,
-//     },
-//     viewport_data : [
-//         {
-//             imageIds: ["dicomweb:https://ohif-dicom-json-example.s3.amazonaws.com/LIDC-IDRI-0001/01-01-2000-30178/3000566.000000-03192/1-002.dcm"],
-//             ww: 300,
-//             wc: 300,
-//             currentImageIdIndex: 0,
-//             zoom: 1,
-//             pan_x: 0,
-//             pan_y: 0,
-//             rotation: 0,
-//         }, {
-//             imageIds: ["dicomweb:https://ohif-dicom-json-example.s3.amazonaws.com/LIDC-IDRI-0001/01-01-2000-30178/3000566.000000-03192/1-002.dcm"],
-//             ww: 1800,
-//             wc: 200,
-//             currentImageIdIndex: 0,
-//             zoom: 1,
-//             pan_x: 0,
-//             pan_y: 0,
-//             rotation: 0,
-//         }, {
-//             imageIds: ["dicomweb:https://ohif-dicom-json-example.s3.amazonaws.com/LIDC-IDRI-0001/01-01-2000-30178/3000566.000000-03192/1-002.dcm"],
-//             ww: 300,
-//             wc: 100,
-//             currentImageIdIndex: 0,
-//             zoom: 1,
-//             pan_x: 0,
-//             pan_y: 0,
-//             rotation: 0,
-//         }, {
-//             imageIds: ["dicomweb:https://ohif-dicom-json-example.s3.amazonaws.com/LIDC-IDRI-0001/01-01-2000-30178/3000566.000000-03192/1-002.dcm"],
-//             ww: 1800,
-//             wc: 200,
-//             currentImageIdIndex: 0,
-//             zoom: 1,
-//             pan_x: 0,
-//             pan_y: 0,
-//             rotation: 0,
-//         }
-//     ]
-// };
-
-// let queryString = new URLSearchParams(flatten(dataToCreateQueryString)).toString()
-// console.log(queryString)
-
-
-////////////////
-
-// const renderingEngineId = 'myRenderingEngine';
-// const re = cornerstone.getRenderingEngine(renderingEngineId);
-// let vp_dt = [];
-// re.getViewports().forEach((vp) => {
-//     const {imageIds, voiRange, currentImageIdIndex} = vp;
-//     const window = cornerstone.utilities.windowLevel.toWindowLevel(voiRange.lower, voiRange.upper);
-//     vp_dt.push({imageIds, ww: window.windowWidth, wc: window.windowCenter, currentImageIdIndex})
-// })
-
-// let d = {
-//     layout_data: {
-//         rows: 2,
-//         cols: 2,
-//     },
-//     viewport_data: vp_dt,
-// }
-// console.log(new URLSearchParams(flatten(d)).toString());

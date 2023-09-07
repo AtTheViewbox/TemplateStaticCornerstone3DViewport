@@ -4,8 +4,8 @@ import { DataContext, DataDispatchContext, dataReducer } from '../context/DataCo
 import Viewport from '../viewport/viewport';
 
 export default function Layout() {
-    const { layout_data, renderingEngine } = useContext(DataContext).data;
-    const { rows, cols } = layout_data;
+    const { ld, renderingEngine } = useContext(DataContext).data;
+    const { r, c } = ld;
 
     const { dispatch } = useContext(DataDispatchContext);
 
@@ -24,14 +24,14 @@ export default function Layout() {
     
     }, [renderingEngine]);
 
-    const items = Array.from({ length: rows * cols }).map((_, idx) => (
+    const items = Array.from({ length: r * c }).map((_, idx) => (
         <div key={idx} className="grid-item">
             <Viewport viewport_idx={idx} rendering_engine={renderingEngine} />
         </div>
     ));
 
     return renderingEngine ? (
-        <div className="grid-container" style={{ gridTemplateColumns: `repeat(${cols}, 1fr)`, gridTemplateRows: `repeat(${rows}, 1fr)` }}>{items}</div>
+        <div className="grid-container" style={{ gridTemplateColumns: `repeat(${c}, 1fr)`, gridTemplateRows: `repeat(${r}, 1fr)` }}>{items}</div>
     ) : null;
 };
 

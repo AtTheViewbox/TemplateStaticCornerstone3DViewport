@@ -44,16 +44,16 @@ export const DataProvider = ({ children }) => {
             const {
                 PanTool,
                 WindowLevelTool,
-                StackScrollMouseWheelTool,
                 StackScrollTool,
+                StackScrollMouseWheelTool,
                 ZoomTool,
                 PlanarRotateTool,
             } = cornerstoneTools;
 
             cornerstoneTools.addTool(PanTool);
             cornerstoneTools.addTool(WindowLevelTool);
-            cornerstoneTools.addTool(StackScrollMouseWheelTool);
             cornerstoneTools.addTool(StackScrollTool);
+            cornerstoneTools.addTool(StackScrollMouseWheelTool);
             cornerstoneTools.addTool(ZoomTool);
             cornerstoneTools.addTool(PlanarRotateTool);
       
@@ -93,6 +93,5 @@ export function dataReducer(data, action) {
     }
     return new_data;
 }
-
 
 

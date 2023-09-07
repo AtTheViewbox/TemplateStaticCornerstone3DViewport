@@ -1,3 +1,5 @@
+//window.studydata.series.reduce((pS, cS) => [...pS, cS.instances.reduce((pV, cV) => [...pV, cV.url], [])], [])
+
 function longestCommonPrefix(strs) {
     if (strs.length === 0) return "";
 

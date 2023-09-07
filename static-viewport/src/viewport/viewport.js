@@ -52,11 +52,14 @@ export default function Viewport(props) {
 
     const addCornerstoneTools = () => {
 
+      const userAgent = typeof window.navigator === 'undefined' ? '' : navigator.userAgent;
+      const mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
+
       const {
         PanTool,
         WindowLevelTool,
-        StackScrollMouseWheelTool,
         StackScrollTool,
+        StackScrollMouseWheelTool,
         ZoomTool,
         PlanarRotateTool,
         ToolGroupManager,
@@ -72,56 +75,35 @@ export default function Viewport(props) {
       ToolGroupManager.createToolGroup(toolGroupId);
       const toolGroup = ToolGroupManager.getToolGroup(toolGroupId);
 
-      // // Add tools to the tool group
-      toolGroup.addTool(WindowLevelTool.toolName);
-      toolGroup.addTool(PanTool.toolName);
-      toolGroup.addTool(ZoomTool.toolName);
-      toolGroup.addTool(StackScrollMouseWheelTool.toolName, { loop: true });
-      toolGroup.addTool(PlanarRotateTool.toolName);
+      if (mobile) {
+        toolGroup.addTool(WindowLevelTool.toolName);
+        toolGroup.addTool(ZoomTool.toolName);
+        toolGroup.addTool(StackScrollTool.toolName);
 
-      // // Set the initial state of the tools, here all tools are active and bound to
-      // // Different mouse inputs
-      // toolGroup.setToolActive(WindowLevelTool.toolName, {
-      //   bindings: [
-      //     {
-      //       mouseButton: MouseBindings.Primary, // Left Click
-      //     },
-      //   ],
-      // });
-      // toolGroup.setToolActive(PanTool.toolName, {
-      //   bindings: [
-      //     {
-      //       mouseButton: MouseBindings.Auxiliary, // Middle Click
-      //     },
-      //   ],
-      // });
-      // toolGroup.setToolActive(ZoomTool.toolName, {
-      //   bindings: [
-      //     {
-      //       mouseButton: MouseBindings.Secondary, // Right Click
-      //     },
-      //   ],
-      // });
+        toolGroup.setToolActive(ZoomTool.toolName, { bindings: [{ numTouchPoints: 2 }], });
+        toolGroup.setToolActive(StackScrollTool.toolName, { bindings: [{ mouseButton: MouseBindings.Primary }], });
+        toolGroup.setToolActive(WindowLevelTool.toolName, { bindings: [{ numTouchPoints: 3 }], });
 
-      toolGroup.setToolActive(ZoomTool.toolName, {
-        bindings: [{ numTouchPoints: 2 }],
-      });
-      toolGroup.setToolActive(StackScrollTool.toolName, {
-        bindings: [{ mouseButton: MouseBindings.Primary}],
-      });
-      toolGroup.setToolActive(WindowLevelTool.toolName, {
-        bindings: [{ numTouchPoints: 3 }],
-      });
+      } else {
+        toolGroup.addTool(WindowLevelTool.toolName);
+        toolGroup.addTool(PanTool.toolName);
+        toolGroup.addTool(ZoomTool.toolName);
+        toolGroup.addTool(StackScrollMouseWheelTool.toolName, { loop: true });
 
-      //toolGroup.setToolActive(StackScrollMouseWheelTool.toolName);
+        toolGroup.setToolActive(WindowLevelTool.toolName, { bindings: [{ mouseButton: MouseBindings.Primary }], });
+        toolGroup.setToolActive(PanTool.toolName, { bindings: [{ mouseButton: MouseBindings.Auxiliary }], });
+        toolGroup.setToolActive(ZoomTool.toolName, { bindings: [{ mouseButton: MouseBindings.Secondary }], });
+        toolGroup.setToolActive(StackScrollMouseWheelTool.toolName);
+      }
+
       toolGroup.addViewport(`${viewport_idx}-vp`, 'myRenderingEngine');
-
-
     };
 
     console.log("mounting viewport");
     if (viewport_data) {
-      loadImagesAndDisplay().then(addCornerstoneTools());
+      loadImagesAndDisplay().then(() => {
+        addCornerstoneTools();
+      });
     }
     return () => { console.log("unmounting viewport"); };
   }, []);

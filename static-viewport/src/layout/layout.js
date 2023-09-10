@@ -12,7 +12,7 @@ export default function Layout() {
     useEffect(() => {
         console.log("layout rerendering")
         const handleResize = () => {
-            dispatch({type: 'export_layout_to_link'})
+            //dispatch({type: 'export_layout_to_link'})
             renderingEngine.resize(true);
         };
 

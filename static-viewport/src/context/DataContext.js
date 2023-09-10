@@ -6,6 +6,10 @@ import { recreateList } from '../utils/inputParser.js';
 import * as cornerstone from '@cornerstonejs/core';
 import * as cornerstoneTools from '@cornerstonejs/tools';
 import cornerstoneDICOMImageLoader from '@cornerstonejs/dicom-image-loader';
+import {
+    cornerstoneStreamingImageVolumeLoader,
+} from '@cornerstonejs/streaming-image-volume-loader';
+
 import dicomParser from 'dicom-parser';
 
 export const DataContext = createContext({});    
@@ -19,9 +23,9 @@ urlData.vd.forEach((vdItem) => {
     }
 });
 
-console.log(urlData);
+console.log("urlData", urlData);
 
-console.log("urlData", urlData)
+
 
 export const DataProvider = ({ children }) => {
     const [data, dispatch] = useReducer(dataReducer, urlData);
@@ -36,6 +40,11 @@ export const DataProvider = ({ children }) => {
             cornerstoneDICOMImageLoader.external.dicomParser = dicomParser;
             await cornerstone.init();
             await cornerstoneTools.init();
+
+            cornerstone.volumeLoader.registerVolumeLoader(
+                'cornerstoneStreamingImageVolume',
+                cornerstoneStreamingImageVolumeLoader
+            );
 
             const renderingEngineId = 'myRenderingEngine';
             const re = new cornerstone.RenderingEngine(renderingEngineId);
@@ -95,3 +104,96 @@ export function dataReducer(data, action) {
 }
 
 
+
+
+////////////////// CODE TO GENERATE URL QUERY STRINGS //////////////////
+
+const dataToCreateQueryString = {
+    ld : {
+        r: 2,
+        c: 1,
+    },
+    vd : [
+        {
+            s: {pf: "dicomweb:https://s3.amazonaws.com/elasticbeanstalk-us-east-1-843279806438/dicom/production/-ywXf2R16d_1.3.12.2.1107.5.1.4.73513.30000019073110243989500020904/", sf: ".dcm.gz", s: "002", e: "541"},
+            ww: 600,
+            wc: 200,
+            ci: 0,
+            z: 1,
+            px: 0,
+            py: 0,
+            r: 0,
+        }, {
+            s: {pf: "dicomweb:https://s3.amazonaws.com/elasticbeanstalk-us-east-1-843279806438/dicom/production/-ywXf2R16d_1.3.12.2.1107.5.1.4.73513.30000019073110243989500021446/", sf: ".dcm.gz", s: "002", e: "148"},
+            ww: 600,
+            wc: 200,
+            ci: 0,
+            z: 1,
+            px: 0,
+            py: 0,
+            r: 0,
+        }
+        // }, {
+        //     s: {pf: "dicomweb:https://s3.amazonaws.com/elasticbeanstalk-us-east-1-843279806438/dicom/production/-ywXf2R16d_1.3.12.2.1107.5.1.4.73513.30000019073110243989500021595/", sf: ".dcm.gz", s: "002", e: "215"},
+        //     ww: 600,
+        //     wc: 200,
+        //     ci: 0,
+        //     z: 1,
+        //     px: 0,
+        //     py: 0,
+        //     r: 0,
+        // }, {
+        //     s: {pf: "dicomweb:https://s3.amazonaws.com/elasticbeanstalk-us-east-1-843279806438/dicom/production/-ywXf2R16d_1.3.12.2.1107.5.1.4.73513.30000019073110243989500021595/", sf: ".dcm.gz", s: "002", e: "541"},
+        //     ww: 600,
+        //     wc: 200,
+        //     ci: 0,
+        //     z: 1,
+        //     px: 0,
+        //     py: 0,
+        //     r: 0,
+        // },
+    ]
+};
+
+const a = {
+    ld : {
+        r: 1,
+        c: 1,
+    },
+    vd : [
+        {
+            s: {pf: 'dicomweb:https://s3.amazonaws.com/elasticbeanstalk-us-east-1-843279806438/dicom/production/-ywXf2R16d_1.3.12.2.1107.5.1.4.73513.30000019073110243989500020904/', sf: '.dcm.gz', s: '001', e: '100'},
+            ww: 600,
+            wc: 200,
+            ci: 0,
+            z: 1,
+            px: 0,
+            py: 0,
+            r: 0,
+        }
+    ]
+}
+
+let queryString = new URLSearchParams(flatten(a)).toString()
+console.log(queryString)
+
+
+////////////////
+
+// const renderingEngineId = 'myRenderingEngine';
+// const re = cornerstone.getRenderingEngine(renderingEngineId);
+// let vp_dt = [];
+// re.getViewports().forEach((vp) => {
+//     const {imageIds, voiRange, currentImageIdIndex} = vp;
+//     const window = cornerstone.utilities.windowLevel.toWindowLevel(voiRange.lower, voiRange.upper);
+//     vp_dt.push({imageIds, ww: window.windowWidth, wc: window.windowCenter, currentImageIdIndex})
+// })
+
+// let d = {
+//     layout_data: {
+//         rows: 2,
+//         cols: 2,
+//     },
+//     viewport_data: vp_dt,
+// }
+// console.log(new URLSearchParams(flatten(d)).toString());

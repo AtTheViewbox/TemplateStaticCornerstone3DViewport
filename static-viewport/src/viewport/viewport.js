@@ -1,20 +1,45 @@
 import React, { useRef, useContext, useEffect } from 'react';
 import { DataContext } from '../context/DataContext.js';
+import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
 
 import * as cornerstone from '@cornerstonejs/core';
 import * as cornerstoneTools from '@cornerstonejs/tools';
 import cornerstoneDICOMImageLoader from '@cornerstonejs/dicom-image-loader';
 import dicomParser from 'dicom-parser';
+import { createClient } from '@supabase/supabase-js'
+
 
 export default function Viewport(props) {
   const elementRef = useRef(null);
 
-  const { vd } = useContext(DataContext).data;
+  const { m, vd } = useContext(DataContext).data;
   const { viewport_idx, rendering_engine } = props;
   const viewport_data = vd[viewport_idx];
 
   useEffect(() => {
 
+    const client = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const myChannel = client.channel('room', {
+      config: {
+        broadcast: { self: false },
+      },
+    })
+
+    myChannel.subscribe((status) => {
+      // Wait for successful connection
+      if (status !== 'SUBSCRIBED') {
+        return null
+      }
+    
+      // Send a message once the client is subscribed
+      myChannel.send({
+        type: 'broadcast',
+        event: 'subscription',
+        payload: { message: 'new subscription' },
+      })
+    })
+    
     const loadImagesAndDisplay = async () => {
 
       const viewportId = `${viewport_idx}-vp`;
@@ -46,6 +71,28 @@ export default function Viewport(props) {
         voiRange: cornerstone.utilities.windowLevel.toLowHighRange(ww, wc),
         isComputedVOI: false,
       });
+
+      elementRef.current.addEventListener('CORNERSTONE_STACK_NEW_IMAGE', (event) => {
+        myChannel.send({
+          type: 'broadcast',
+          event: m == 'true' ? 'master' : 'stack',
+          payload: { message: event.detail.imageIdIndex, viewport: viewportId },
+        })
+      })
+
+      myChannel.on(
+        'broadcast',
+        { event: 'master' },
+        (payload) => {
+          if (m == 'false') {
+            if (payload.payload.viewport == viewportId) {
+              viewport.setImageIdIndex(payload.payload.message);
+            }
+          } 
+          
+          
+        }
+      )
 
       viewport.render();
     };
